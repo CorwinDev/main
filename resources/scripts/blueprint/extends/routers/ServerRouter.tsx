@@ -14,10 +14,20 @@ import blueprintRoutes from './routes';
 
 const blueprintExtensions = [...new Set(blueprintRoutes.server.map((route) => route.identifier))];
 
-/**
- * Get the route egg IDs for each extension with server routes.
- */
-const useExtensionEggs = () => {
+export const NavigationLinks = () => {
+  const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+  const serverEgg = ServerContext.useStoreState((state) => state.server.data?.BlueprintFramework.eggId);
+  const match = useRouteMatch<{ id: string }>();
+  const to = (value: string, url = false) => {
+    if (value === '/') {
+      return url ? match.url : match.path;
+    }
+    return `${(url ? match.url : match.path).replace(/\/*$/, '')}/${value.replace(/^\/+/, '')}`;
+  };
+
+  /**
+   * Get the route egg IDs for each extension with server routes.
+   */
   const [extensionEggs, setExtensionEggs] = useState<{ [x: string]: string[] }>(
     blueprintExtensions.reduce((prev, current) => ({ ...prev, [current]: ['-1'] }), {})
   );
@@ -32,21 +42,6 @@ const useExtensionEggs = () => {
       setExtensionEggs(newEggs);
     })();
   }, []);
-
-  return extensionEggs;
-};
-
-export const NavigationLinks = () => {
-  const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
-  const serverEgg = ServerContext.useStoreState((state) => state.server.data?.BlueprintFramework.eggId);
-  const match = useRouteMatch<{ id: string }>();
-  const to = (value: string, url = false) => {
-    if (value === '/') {
-      return url ? match.url : match.path;
-    }
-    return `${(url ? match.url : match.path).replace(/\/*$/, '')}/${value.replace(/^\/+/, '')}`;
-  };
-  const extensionEggs = useExtensionEggs();
 
   return (
     <>
